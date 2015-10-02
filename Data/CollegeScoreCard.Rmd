@@ -37,10 +37,11 @@ Foo2 <- Map( function(data, file) {
 # the items that contain data.
 # ScoreCard <- bind_rows(Foo2[1:6])
 ScoreCard <- do.call(rbind, Foo2)
+saveRDS(ScoreCard, "CollegeScoreCardAll.rds")
 ```
 
 ```{r}
-ScoreCard <- readRDS("~/Data/CollegeScorecard_Raw_Data/CollegeScoreCardAll.rds")
+ScoreCard <- readRDS("CollegeScoreCardAll.rds")
 names(ScoreCard)[1] <- "UNITID"
 ```
 
