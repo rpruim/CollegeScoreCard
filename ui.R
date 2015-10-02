@@ -17,5 +17,5 @@ shinyUI(fluidPage(
   textOutput("institutionName"),
   plotOutput("TSplot", hover = "plot_hover", click = "plot_click"),
   verbatimTextOutput("info"),
-  dataTableOutput("hilight")
+  dataTableOutput("data")
 ))

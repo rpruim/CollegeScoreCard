@@ -33,33 +33,19 @@ CP <-
 
 shinyServer(function(input, output) {
 
-  output$TSplot <- renderPlot({
-    p <- ggplot(CP)
-    if (input$smooth == "Yes") {
-      p <- p +
-        geom_line(
-          stat = "smooth",
-          se = FALSE,
-          method = "loess",
-          aes_string(x = "year", y = input$yvar,
-                     colour = "UNITID",
-                     size = "Institution", alpha = "Institution"))
-    } else {
-      p <- p +
-        geom_line(
-          aes_string(x = "year", y = input$yvar, group="UNITID",
-                     colour = "Institution",
-                     size = "Institution", alpha = "Institution"))
-    }
-    p <- p +
-      scale_alpha_manual(values = c(1, .3)) +
-      scale_size_manual(values = c(1.8, .4)) +
-      scale_color_manual(values = c("maroon", rep("goldenrod", 40))) +
-      theme_minimal()
+  mainData <- reactive({
+    res <- select_(CP, "year", "INSTNM", "UNITID", input$yvar, "Institution")
+    res[complete.cases(res), ]
+  })
 
-    q <- CP %>%
-      ggplot() +
+  hiliteData <- reactive({
+    mainData() %>% filter( UNITID == CalvinPeerIDs[input$institutionSlider] )
+  })
+
+  output$TSplot <- renderPlot({
+    q <-  ggplot() +
       geom_line(
+        data = mainData(),
         stat = "smooth",
         method = "loess",
         aes_string(x = "year", y=input$yvar,
@@ -70,7 +56,7 @@ shinyServer(function(input, output) {
         )
       ) +
       geom_line(
-        data = CP %>% filter( UNITID == CalvinPeerIDs[input$institutionSlider] ),
+        data = hiliteData(),
         stat = "smooth",
         method = "loess",
         aes_string(x = "year", y=input$yvar),
@@ -97,13 +83,17 @@ shinyServer(function(input, output) {
     D$INSTNM[1]
   })
 
+  output$data <- renderDataTable({
+    mainData()
+  })
+
   output$info <- renderPrint({
     # With ggplot2, no need to tell it what the x and y variables are.
     # threshold: set max distance, in pixels
     # maxpoints: maximum number of rows to return
     # addDist: add column with distance, in pixels
     nearPoints(
-      CP, input$plot_hover,
+      mainData(), input$plot_hover,
       threshold = 10, maxpoints = 1,
       addDist = TRUE) %>%
       select(INSTNM)
