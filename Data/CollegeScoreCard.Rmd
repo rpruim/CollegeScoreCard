@@ -1,0 +1,168 @@
+---
+title: "College Score Card"
+author: "R Pruim"
+date: "September 26, 2015"
+output: html_document
+---
+
+```{r setup}
+require(mosaic)
+require(readr)
+```
+
+Some edits were made to the original data files:
+
+  * `NULL` mapped to `""` in CSV so it is read as missing
+  * `PrivacySuppressed` mapped to `""` so it is read as missing
+  
+```{r eval=FALSE}
+Foo <- list()
+files <- dir(".", pattern = "MERGED", full.names = TRUE)
+files <- grep("csv", files, value=TRUE)
+Foo <- lapply(files,  read_csv)
+Foo2 <- Map( function(data, file) { 
+  data <- 
+    mutate(
+      data,
+      year = tidyr::extract_numeric(file),
+      ZIP = as.character(ZIP)
+    )
+  data }, 
+  Foo, files )
+```
+
+```{r, eval=FALSE}
+# bind_rows chokes on data type mismatches.  For example, when a column has all missing values
+# these are read by read_csv() as logicals and can't be combined by bind_rows() with
+# the items that contain data.
+# ScoreCard <- bind_rows(Foo2[1:6])
+ScoreCard <- do.call(rbind, Foo2)
+```
+
+```{r}
+ScoreCard <- readRDS("~/Data/CollegeScorecard_Raw_Data/CollegeScoreCardAll.rds")
+names(ScoreCard)[1] <- "UNITID"
+```
+
+```{r}
+unitids <- c(
+222178,
+210669,
+164562,
+143084,
+201195,
+173160,
+143358,
+150163,
+169080,
+201654,
+174747,
+173300,
+144962,
+205957,
+173647,
+170301,
+145646,
+203368,
+213321,
+192323,
+219976,
+213996,
+214175,
+193584,
+193973,
+204635,
+204936,
+236230,
+154235,
+102049,
+236577,
+167899,
+174844,
+216278,
+152530,
+174899,
+150534,
+204185,
+209825,
+152600,
+149781
+)
+
+Calvin <- 
+  ScoreCard %>% 
+  filter(UNITID %in% unitids) %>%
+  mutate(
+    INSTNM = gsub("Saint", "St", INSTNM, ignore.case=TRUE),
+    INSTNM = gsub("St\\.", "St", INSTNM, ignore.case=TRUE),
+    INSTNM = toupper(INSTNM),
+    isCalvin = UNITID == 169080,
+    Institution = mosaic::derivedFactor(
+      Calvin = isCalvin,
+      Other = ! isCalvin
+    )
+  ) 
+```
+
+
+```{r}
+Calvin %>% 
+  ggplot() +
+  geom_line( 
+    stat = "smooth",
+    method = "loess",
+    aes(x = year, y=GRAD_DEBT_MDN_SUPP, 
+        color = Institution, 
+        alpha = Institution,
+        size = Institution,
+        group = UNITID
+    )
+  ) +
+  lims(y = c(0, 30000)) +
+  scale_alpha_manual(values = c(1, .3)) +
+  scale_size_manual(values = c(1.8, .4)) +
+  scale_color_manual(values = c("maroon", "goldenrod")) +
+#  guides(color = FALSE) +
+  theme_minimal()
+```
+
+
+```{r}
+Calvin %>% 
+  ggplot() +
+  geom_line( 
+    stat = "smooth",
+    method = "loess",
+    aes(x = year, y=GRAD_DEBT_MDN_SUPP, 
+        color = Institution, 
+        alpha = Institution,
+        size = Institution,
+        group = UNITID
+    )
+  ) +
+  lims(y = c(0, 30000)) +
+  scale_alpha_manual(values = c(1, .3)) +
+  scale_size_manual(values = c(1.8, .4)) +
+  scale_color_manual(values = c("maroon", "goldenrod")) +
+#  guides(color = FALSE) +
+  theme_minimal()
+```
+
+```{r}
+Calvin %>% 
+  ggplot() +
+  geom_line( 
+    aes(x = year, y=PCTFLOAN, 
+        color = Institution, 
+        group = UNITID, 
+        alpha = Institution,
+        size = Institution
+    )
+  ) +
+  lims(y = c(0, 1), x=c(2009, 2013)) +
+  scale_alpha_manual(values = c(1, .3)) +
+  scale_size_manual(values = c(1.8, .4)) +
+  scale_color_manual(values = c("maroon", "goldenrod")) +
+  theme_minimal()
+```
+    
