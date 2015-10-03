@@ -6,6 +6,7 @@
 #
 
 library(shiny)
+source("global.R")
 
 shinyUI(fluidPage(
   # Application title
