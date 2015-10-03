@@ -22,17 +22,16 @@ smoothness <-
     .40, .42, .44, .46, .48,
     .50, .54, .58, .62, .66,
     .71, .77, .84, .92, 1.0)
-
+#
 # CP <-
 #   ScoreCard %>%
-#   filter(UNITID %in% CalvinAndPeerIDs) %>%
-#   mutate(
-#     Institution = derivedFactor(
-#       Calvin = UNITID == CalvinID,
-#       Other = ! UNITID == CalvinID
-#     ),
-#     UNITID = factor(UNITID)
-#   )
-
+#   filter(UNITID %in% CalvinAndPeerIDs)
+#
+# CP$Institution <-
+#   derivedFactor(
+#       Calvin =   CP$UNITID == CalvinID,
+#       Other  = ! CP$UNITID == CalvinID
+#     )
+# saveRDS(CP, file = "Data/CalvinAndPeersScoreCard.rds")
 CP <- readRDS("Data/CalvinAndPeersScoreCard.rds")
 

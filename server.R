@@ -7,8 +7,11 @@
 require(shiny)
 require(ggplot2)
 require(dplyr)
+source("global.R")
 
 shinyServer(function(input, output) {
+
+
 
   mainData <- reactive({
     res <- select_(CP, "year", "INSTNM", "UNITID", input$yvar, "Institution")
@@ -93,7 +96,7 @@ shinyServer(function(input, output) {
   })
 
   output$data <- renderDataTable({
-    mainData() %>% select_("INSTNM", "year", input$yvar)
+    hiliteData() %>% select_("INSTNM", "year", input$yvar)
   })
 
   output$info <- renderPrint({
@@ -103,7 +106,7 @@ shinyServer(function(input, output) {
     # addDist: add column with distance, in pixels
     nearPoints(
       hiliteData(), input$plot_hover,
-      threshold = 10, maxpoints = 1,
+      threshold = 33, maxpoints = 2,
       addDist = TRUE) %>%
       select(INSTNM)
   })
